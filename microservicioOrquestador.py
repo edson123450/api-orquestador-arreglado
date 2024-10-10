@@ -79,12 +79,27 @@ def new_review():
         "rating": rating,
         "comment": comment
     })
+
     error_response = handle_http_errors(review_response)
     if error_response:
         return error_response
 
+    # Verificar que el microservicio 3 devolvió un JSON válido
+    try:
+        review_data = review_response.json()
+    except ValueError as e:
+        logging.error(f"Error al decodificar JSON del microservicio 3: {e}")
+        return jsonify({"error": "Respuesta inválida del microservicio 3"}), 500
+
     logging.info(f"Review creada con éxito")
-    return jsonify({"message": "Review created successfully"}), 201
+    return jsonify(review_data), 201
+
+    #error_response = handle_http_errors(review_response)
+    #if error_response:
+    #    return error_response
+
+    #logging.info(f"Review creada con éxito")
+    #return jsonify({"message": "Review created successfully"}), 201
 
 
 # API 2: Verificar si un usuario ha hecho una review
@@ -147,8 +162,9 @@ def check_review():
     if error_response:
         return error_response
 
+    #logging.info(f"Contenido de la respuesta: {review_response.text}")
+    #logging.info(f"Respuesta de microservicio 3: {review_response}")
     review_data = review_response.json()
-    logging.info(f"Respuesta de microservicio 3: {review_data}")
 
     # Paso 4: Verificar el valor de "message" en la respuesta
     if review_data['message'] == 'si':
